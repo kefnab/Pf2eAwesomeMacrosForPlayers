@@ -6,9 +6,9 @@
     "minimum": "14",
     "verified": "14"
   },
-  "url": "https://github.com/joshuaelander/Pf2eAwesomeMacrosForPlayers",
-  "manifest": "https://raw.githubusercontent.com/joshuaelander/Pf2eAwesomeMacrosForPlayers/main/module.json",
-  "download": "https://github.com/joshuaelander/Pf2eAwesomeMacrosForPlayers/archive/refs/heads/main.zip",
+"url": "https://github.com/kefnab/Pf2eAwesomeMacrosForPlayers/tree/patch-1",
+  "manifest": "https://raw.githubusercontent.com/kefnab/Pf2eAwesomeMacrosForPlayers/patch-1/module.json",
+  "download": "https://github.com/kefnab/Pf2eAwesomeMacrosForPlayers/archive/refs/heads/patch-1.zip",
   "socket": true,
   "esmodules": [
     "scripts/main.js"
