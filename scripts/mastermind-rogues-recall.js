@@ -111,7 +111,7 @@ export function mastermindRecall(circumstanceBonus = 0) {
                 const isCrit = degree === 'Critical Success';
                 const durationValue = isCrit ? 10 : 1; // 10 rounds = 1 minute
 
-                // Check for the global socketlib handler
+                // Check for the global socketlib handler and pass actor.uuid from earlier sourceActorUuid
                 if (game.pf2eAwesomePlayerMacros && game.pf2eAwesomePlayerMacros.applyMastermindOffGuard) {
                     await game.pf2eAwesomePlayerMacros.applyMastermindOffGuard(target.actor.uuid, durationValue, actor.uuid);
 
