@@ -19,18 +19,19 @@ export const MASTERMIND_RECALL_MACRO_ICON = "icons/skills/targeting/target-strik
 /**
  * Executes strictly on the GM client to bypass player permission blocks.
  */
-export async function applyMastermindOffGuardAsGM(targetUuid, durationValue) {
+export async function applyMastermindOffGuardAsGM(targetUuid, durationValue, sourceActorUuid) {
     const target = await fromUuid(targetUuid);
     if (!target) return;
 
-    // Support either a TokenDocument or an Actor document
     const targetActor = target.actor || target;
     if (!targetActor) return;
 
+    const sourceActor = await fromUuid(sourceActorUuid);
+    
     // Build the custom wrapper effect with a GrantItem rule element
     const effectData = {
         type: "effect",
-        name: "Mastermind's Assessment",
+        name: `Off-Guard to ${sourceActor?.name ?? "Rogue"} (Mastermind)`,
         img: MASTERMIND_RECALL_MACRO_ICON,
         system: {
             level: { value: 1 },
@@ -40,13 +41,28 @@ export async function applyMastermindOffGuardAsGM(targetUuid, durationValue) {
                 expiry: "turn-start"
             },
             description: {
-                value: "<p>This creature is off-guard due to Mastermind's Assessment.</p>"
+                value: `<p>This creature is off-guard against attacks from <strong>${sourceActor?.name ?? "the rogue"}</strong> due to Mastermind's Assessment.</p>`
             },
             rules: [
+                // 1. Applies the -2 AC circumstance penalty strictly against this attacker
                 {
-                    // Grants the built-in PF2e Off-Guard condition natively
-                    key: "GrantItem",
-                    uuid: "Compendium.pf2e.conditionitems.Item.AJh5ex99aV6VTggg"
+                    key: "FlatModifier",
+                    selector: "ac",
+                    value: -2,
+                    type: "circumstance",
+                    label: "Off-Guard (Mastermind)",
+                    predicate: [
+                        `origin:uuid:${sourceActorUuid}`
+                    ]
+                },
+                // 2. Injects the Off-Guard condition flag so Sneak Attack triggers automatically
+                {
+                    key: "RollOption",
+                    domain: "all-attacks",
+                    option: "target:condition:off-guard",
+                    predicate: [
+                        `origin:uuid:${sourceActorUuid}`
+                    ]
                 }
             ]
         }
@@ -54,7 +70,6 @@ export async function applyMastermindOffGuardAsGM(targetUuid, durationValue) {
 
     await targetActor.createEmbeddedDocuments("Item", [effectData]);
 }
-
 // --- Main Macro Execution ---
 export function mastermindRecall(circumstanceBonus = 0) {
     const controlled = canvas?.tokens?.controlled ?? [];
@@ -98,7 +113,7 @@ export function mastermindRecall(circumstanceBonus = 0) {
 
                 // Check for the global socketlib handler
                 if (game.pf2eAwesomePlayerMacros && game.pf2eAwesomePlayerMacros.applyMastermindOffGuard) {
-                    await game.pf2eAwesomePlayerMacros.applyMastermindOffGuard(target.actor.uuid, durationValue);
+                    await game.pf2eAwesomePlayerMacros.applyMastermindOffGuard(target.actor.uuid, durationValue, actor.uuid);
 
                     const timeString = isCrit ? "for 1 minute" : "until the start of your next turn";
 
